@@ -1,6 +1,5 @@
 
 import torch
-from torch.utils.data import  SubsetRandomSampler
 from torch.utils.data.dataset import Dataset  # For custom data-sets
 #from torchvision.datasets import CIFAR10
 import torchvision.transforms as transforms
@@ -99,10 +98,7 @@ classes= ['A2CH', 'A3CH', 'A4CH_LV', 'A4CH_RV', 'A5CH', 'Apical_MV_LA_IAS',
  'OTHER', 'PLAX_TV', 'PLAX_full', 'PLAX_valves', 'PSAX_AV', 'PSAX_LV',
  'Subcostal_IVC', 'Subcostal_heart', 'Suprasternal']
   
-#if __name__ == '__main__':
-#  CustomDataset_classification()
 
-          
-#reward_loader = torch.utils.data.DataLoader(train_dataset,batch_size=args.batch_size,
-#            sampler=SubsetRandomSampler(indices[-7000:]),pin_memory=True, num_workers=2)
+
+ 
       
