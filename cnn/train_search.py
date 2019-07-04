@@ -20,7 +20,7 @@ from torch.utils.data import  SubsetRandomSampler
 
 parser = argparse.ArgumentParser("cifar")
 parser.add_argument('--data', type=str, default='../data', help='location of the data corpus')
-parser.add_argument('--batch_size', type=int, default=2, help='batch size')
+parser.add_argument('--batch_size', type=int, default=1, help='batch size')
 parser.add_argument('--learning_rate', type=float, default=0.0001, help='init learning rate') #default=0.025
 parser.add_argument('--learning_rate_min', type=float, default=0.001, help='min learning rate')
 parser.add_argument('--momentum', type=float, default=0.9, help='momentum')
@@ -146,21 +146,20 @@ def train(train_queue, valid_queue, model, architect, criterion, optimizer, lr):
     architect.step(t_image, target, input_search, target_search, lr, optimizer, unrolled=args.unrolled)
 
     optimizer.zero_grad()
-    with torch.set_grad_enabled(True):
-        logits = model(t_image)
-        loss = criterion(logits, target)
-    
-        loss.backward()
-        nn.utils.clip_grad_norm(model.parameters(), args.grad_clip)
-        optimizer.step()
-    
-        prec1, prec5 = utils.accuracy(logits, target, topk=(1, 5))
-        objs.update(loss, n)
-        top1.update(prec1, n)
-        top5.update(prec5, n)
-    
-        if step % args.report_freq == 0:
-          logging.info('train %03d %e %f %f', step, objs.avg, top1.avg, top5.avg)
+    logits = model(t_image)
+    loss = criterion(logits, target)
+
+    loss.backward()
+    nn.utils.clip_grad_norm(model.parameters(), args.grad_clip)
+    optimizer.step()
+
+    prec1, prec5 = utils.accuracy(logits, target, topk=(1, 5))
+    objs.update(loss, n)
+    top1.update(prec1, n)
+    top5.update(prec5, n)
+
+    if step % args.report_freq == 0:
+      logging.info('train %03d %e %f %f', step, objs.avg, top1.avg, top5.avg)
 
   return top1.avg, objs.avg
 
