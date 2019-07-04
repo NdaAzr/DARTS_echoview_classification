@@ -22,7 +22,7 @@ from torch.utils.data import  SubsetRandomSampler
 
 parser = argparse.ArgumentParser("cifar")
 parser.add_argument('--data', type=str, default='../data', help='location of the data corpus')
-parser.add_argument('--batch_size', type=int, default=1, help='batch size')
+parser.add_argument('--batch_size', type=int, default=2, help='batch size')
 parser.add_argument('--learning_rate', type=float, default=0.025, help='init learning rate')
 parser.add_argument('--learning_rate_min', type=float, default=0.001, help='min learning rate')
 parser.add_argument('--momentum', type=float, default=0.9, help='momentum')
@@ -96,7 +96,6 @@ def main():
   train_queue = torch.utils.data.DataLoader(train_data,batch_size=args.batch_size,
                 pin_memory=True, num_workers=2)
   
-#sampler=SubsetRandomSampler(indices[:1000]),  
   
   valid_data = CustomDataset_classification(valid_image_paths, valid_targets, classes, valid_image_paths)  
   valid_queue = torch.utils.data.DataLoader(valid_data, batch_size=args.batch_size, 
