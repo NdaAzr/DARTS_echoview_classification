@@ -12,18 +12,16 @@ import torch.utils
 import torch.nn.functional as F
 import torchvision.datasets as dset
 import torch.backends.cudnn as cudnn
-
-from torch.autograd import Variable
+#from torch.autograd import Variable
 from model_search import Network
 from architect import Architect
 from datatrain import CustomDataset_classification, train_image_paths, train_tragets, classes, valid_image_paths, valid_targets 
 from torch.utils.data import  SubsetRandomSampler
-#torch.cuda.empty_cache()
 
 parser = argparse.ArgumentParser("cifar")
 parser.add_argument('--data', type=str, default='../data', help='location of the data corpus')
 parser.add_argument('--batch_size', type=int, default=2, help='batch size')
-parser.add_argument('--learning_rate', type=float, default=0.025, help='init learning rate')
+parser.add_argument('--learning_rate', type=float, default=0.0001, help='init learning rate') #default=0.025
 parser.add_argument('--learning_rate_min', type=float, default=0.001, help='min learning rate')
 parser.add_argument('--momentum', type=float, default=0.9, help='momentum')
 parser.add_argument('--weight_decay', type=float, default=3e-4, help='weight decay')
@@ -92,7 +90,7 @@ def main():
   num_train = len(train_data)
   indices = list(range(num_train))
 #  split = int(np.floor(args.train_portion * num_train))
-
+#dataset is splitted in datatrain module 
   train_queue = torch.utils.data.DataLoader(train_data,batch_size=args.batch_size,
                 pin_memory=True, num_workers=2)
   
@@ -148,20 +146,21 @@ def train(train_queue, valid_queue, model, architect, criterion, optimizer, lr):
     architect.step(t_image, target, input_search, target_search, lr, optimizer, unrolled=args.unrolled)
 
     optimizer.zero_grad()
-    logits = model(t_image)
-    loss = criterion(logits, target)
-
-    loss.backward()
-    nn.utils.clip_grad_norm(model.parameters(), args.grad_clip)
-    optimizer.step()
-
-    prec1, prec5 = utils.accuracy(logits, target, topk=(1, 5))
-    objs.update(loss, n)
-    top1.update(prec1, n)
-    top5.update(prec5, n)
-
-    if step % args.report_freq == 0:
-      logging.info('train %03d %e %f %f', step, objs.avg, top1.avg, top5.avg)
+    with torch.set_grad_enabled(True):
+        logits = model(t_image)
+        loss = criterion(logits, target)
+    
+        loss.backward()
+        nn.utils.clip_grad_norm(model.parameters(), args.grad_clip)
+        optimizer.step()
+    
+        prec1, prec5 = utils.accuracy(logits, target, topk=(1, 5))
+        objs.update(loss, n)
+        top1.update(prec1, n)
+        top5.update(prec5, n)
+    
+        if step % args.report_freq == 0:
+          logging.info('train %03d %e %f %f', step, objs.avg, top1.avg, top5.avg)
 
   return top1.avg, objs.avg
 
@@ -172,23 +171,27 @@ def infer(valid_queue, model, criterion):
   top5 = utils.AvgrageMeter()
   model.eval()
 
-  for step, (t_image, target, i, ii) in enumerate(valid_queue):
-    t_image = t_image.cuda()
-    target = target.cuda()
+  with torch.no_grad():
 
-    logits = model(t_image)
-    loss = criterion(logits, target)
-
-    prec1, prec5 = utils.accuracy(logits, target, topk=(1, 5))
-    n = t_image.size(0)
-    objs.update(loss, n)
-    top1.update(prec1, n)
-    top5.update(prec5, n)
-
-    if step % args.report_freq == 0:
-      logging.info('valid %03d %e %f %f', step, objs.avg, top1.avg, top5.avg)
-
-  return top1.avg, objs.avg
+      for step, (t_image, target, i, ii) in enumerate(valid_queue):
+          
+        
+        t_image = t_image.cuda()
+        target = target.cuda()
+    
+        logits = model(t_image)
+        loss = criterion(logits, target)
+    
+        prec1, prec5 = utils.accuracy(logits, target, topk=(1, 5))
+        n = t_image.size(0)
+        objs.update(loss, n)
+        top1.update(prec1, n)
+        top5.update(prec5, n)
+    
+        if step % args.report_freq == 0:
+          logging.info('valid %03d %e %f %f', step, objs.avg, top1.avg, top5.avg)
+    
+      return top1.avg, objs.avg
 
 
 if __name__ == '__main__':
