@@ -78,6 +78,7 @@ class Architect(object):
     for p, v in zip(self.model.parameters(), vector):
       p.data.add_(R, v)
     loss = self.model._loss(input, target)
+    print("loss",loss)
     grads_p = torch.autograd.grad(loss, self.model.arch_parameters())
 
     for p, v in zip(self.model.parameters(), vector):

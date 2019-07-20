@@ -11,7 +11,8 @@ import os.path
 from sklearn.model_selection import train_test_split
 
 #find_classes and make_dataset are function from Pytorch source
-dir = 'D:/Neda/Echo_View_Classification/avi_images/'
+#dir = 'D:/Neda/Echo_View_Classification/avi_images/'
+dir = 'D:/Neda/NAS/DARTS/DARTS_echoview_classification/cnn/avi_images - Copy'
 
 def find_classes(dir):   # Finds the class folders in a dataset, dir (string): Root directory path.
         
@@ -43,7 +44,7 @@ class CustomDataset_classification(Dataset):
         self.images = images
         self.image_paths = image_paths
         self.transforms = transforms.Compose([
-            transforms.Resize(224),
+            transforms.Resize(200), #224
             transforms.ToTensor(),
             transforms.Normalize([0.0698],[0.1523]),
             ])
@@ -66,11 +67,15 @@ class CustomDataset_classification(Dataset):
 
 find_classes(dir)
 
-folder_data = glob.glob("D:\\Neda\\Echo_View_Classification\\avi_images\\*\\*.png") 
+#folder_data = glob.glob("D:\\Neda\\Echo_View_Classification\\avi_images\\*\\*.png") 
+folder_data = glob.glob("D:\\Neda/NAS\\DARTS\\DARTS_echoview_classification\\cnn\\avi_images - Copy\\*\\*.png") 
 
-classes, targets = find_classes('D:/Neda/Echo_View_Classification/avi_images/')  #avi_images _for_quick_run_test
+#classes, targets = find_classes('D:/Neda/Echo_View_Classification/avi_images/')  #avi_images _for_quick_run_test
+classes, targets = find_classes('D:/Neda/NAS/DARTS/DARTS_echoview_classification/cnn/avi_images - Copy')  #avi_images _for_quick_run_test
 
-data_target = make_dataset('D:/Neda/Echo_View_Classification/avi_images/', targets)
+
+#data_target = make_dataset('D:/Neda/Echo_View_Classification/avi_images/', targets)
+data_target = make_dataset('D:/Neda/NAS/DARTS/DARTS_echoview_classification/cnn/avi_images - Copy', targets)
 
 data_array, targets_array = zip(*data_target)
 
@@ -91,8 +96,6 @@ print(len(valid_image_paths))
 train_tragets = train_target[:split_1]
 valid_targets = train_target[split_1:]
 
-test_dataset = CustomDataset_classification(folder_data_test, test_target, classes, folder_data_test)
-test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=2)  
 
 classes= ['A2CH', 'A3CH', 'A4CH_LV', 'A4CH_RV', 'A5CH', 'Apical_MV_LA_IAS',
  'OTHER', 'PLAX_TV', 'PLAX_full', 'PLAX_valves', 'PSAX_AV', 'PSAX_LV',
